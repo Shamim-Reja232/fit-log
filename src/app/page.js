@@ -1,13 +1,33 @@
 import Hero from "@/components/Hero";
+import WorkoutCard from "@/components/WorkoutCard";
 
-export default function Home() {
+async function getWorkouts() {
+  const response = await fetch(
+    "https://api.abcz.workers.dev/api/fitlog",
+    {
+      cache: "no-store",
+    }
+  );
+
+  if (!response.ok) {
+    throw new Error("Failed to fetch workouts");
+  }
+
+  return response.json();
+}
+
+export default async function Home() {
+  const workouts = await getWorkouts();
+
   return (
     <main>
+      {/* Hero */}
       <Hero />
 
+      {/* Workout Library */}
       <section
         id="library"
-        className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8"
+        className="mx-auto max-w-7xl scroll-mt-20 px-4 py-20 sm:px-6 lg:px-8"
       >
         <div className="mb-10">
           <p className="mb-3 text-sm font-bold tracking-[0.2em] text-gray-500">
@@ -23,10 +43,11 @@ export default function Home() {
           </p>
         </div>
 
-        <div className="rounded-2xl border border-dashed border-gray-300 p-10 text-center">
-          <p className="font-bold text-gray-400">
-            Workouts will appear here
-          </p>
+        {/* Workout Cards */}
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {workouts.map((workout) => (
+            <WorkoutCard key={workout.id} workout={workout} />
+          ))}
         </div>
       </section>
     </main>
