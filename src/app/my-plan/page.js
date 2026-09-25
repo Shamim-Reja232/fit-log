@@ -35,7 +35,6 @@ export default function MyPlan() {
     };
   }, []);
 
-  // Toast
   const showToast = (message) => {
     setToast(message);
 
@@ -44,16 +43,12 @@ export default function MyPlan() {
     }, 3000);
   };
 
-  // Remove from Today's Plan
   const removeFromPlan = (id) => {
     const workout = plan.find((item) => item.id === id);
 
     const updatedPlan = plan.filter((item) => item.id !== id);
 
-    localStorage.setItem(
-      "fitlog-plan",
-      JSON.stringify(updatedPlan)
-    );
+    localStorage.setItem("fitlog-plan", JSON.stringify(updatedPlan));
 
     setPlan(updatedPlan);
 
@@ -64,7 +59,6 @@ export default function MyPlan() {
     window.dispatchEvent(new Event("fitlog-updated"));
   };
 
-  // Remove from Saved
   const removeFromSaved = (id) => {
     const workout = saved.find((item) => item.id === id);
 
@@ -86,7 +80,6 @@ export default function MyPlan() {
     window.dispatchEvent(new Event("fitlog-updated"));
   };
 
-  // Mark as Done
   const markAsDone = (workout) => {
     const updatedPlan = plan.filter(
       (item) => item.id !== workout.id
@@ -104,11 +97,9 @@ export default function MyPlan() {
     window.dispatchEvent(new Event("fitlog-updated"));
   };
 
-  // Current list
   const currentList =
     activeTab === "plan" ? plan : saved;
 
-  // Sort current list
   const sortedList = [...currentList].sort((a, b) => {
     if (sortBy === "duration") {
       return Number(a.duration || 0) - Number(b.duration || 0);
@@ -128,7 +119,6 @@ export default function MyPlan() {
     return 0;
   });
 
-  // Metrics
   const totalMinutes = plan.reduce(
     (total, workout) =>
       total + Number(workout.duration || 0),
@@ -163,7 +153,6 @@ export default function MyPlan() {
       <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-3 gap-3">
 
-          {/* Exercises */}
           <div className="rounded-2xl border border-gray-200 p-5">
             <p className="text-xs font-bold tracking-widest text-gray-400">
               EXERCISES
@@ -174,7 +163,6 @@ export default function MyPlan() {
             </p>
           </div>
 
-          {/* Minutes */}
           <div className="rounded-2xl border border-gray-200 p-5">
             <p className="text-xs font-bold tracking-widest text-gray-400">
               MINUTES
@@ -185,7 +173,6 @@ export default function MyPlan() {
             </p>
           </div>
 
-          {/* Calories */}
           <div className="rounded-2xl border border-gray-200 p-5">
             <p className="text-xs font-bold tracking-widest text-gray-400">
               CALORIES
@@ -200,15 +187,15 @@ export default function MyPlan() {
       </section>
 
       {/* Tabs + Sort */}
-      <section className="mx-auto mt-10 max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between border-b border-gray-200">
+      <section className="mx-auto mt-10 max-w-7xl px-3 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between gap-1 border-b border-gray-200">
 
           {/* Tabs */}
-          <div className="flex gap-3">
+          <div className="flex min-w-0 flex-1">
 
             <button
               onClick={() => setActiveTab("plan")}
-              className={`border-b-2 px-4 py-3 text-sm font-black uppercase ${
+              className={`whitespace-nowrap border-b-2 px-1.5 py-3 text-[10px] font-black uppercase sm:px-4 sm:text-sm ${
                 activeTab === "plan"
                   ? "border-black text-black"
                   : "border-transparent text-gray-400"
@@ -219,7 +206,7 @@ export default function MyPlan() {
 
             <button
               onClick={() => setActiveTab("saved")}
-              className={`border-b-2 px-4 py-3 text-sm font-black uppercase ${
+              className={`whitespace-nowrap border-b-2 px-1.5 py-3 text-[10px] font-black uppercase sm:px-4 sm:text-sm ${
                 activeTab === "saved"
                   ? "border-black text-black"
                   : "border-transparent text-gray-400"
@@ -230,28 +217,21 @@ export default function MyPlan() {
 
           </div>
 
-          {/* Small Sort */}
-          <div className="mb-2 flex items-center gap-2">
-            <span className="hidden text-[10px] font-bold tracking-widest text-gray-400 sm:block">
+          {/* Sort */}
+          <div className="mb-2 flex shrink-0 items-center gap-1">
+            <span className="text-[9px] font-bold tracking-widest text-gray-400 sm:text-[10px]">
               SORT
             </span>
 
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value)}
-              className="rounded-lg border border-gray-200 bg-white px-2 py-2 text-xs font-bold outline-none focus:border-black"
+              className="w-[70px] rounded-lg border border-gray-200 bg-white px-1 py-2 text-[10px] font-bold outline-none focus:border-black sm:w-auto sm:px-2 sm:text-xs"
+              aria-label="Sort workouts"
             >
-              <option value="duration">
-                Duration
-              </option>
-
-              <option value="calories">
-                Calories
-              </option>
-
-              <option value="rating">
-                Rating
-              </option>
+              <option value="duration">Duration</option>
+              <option value="calories">Calories</option>
+              <option value="rating">Rating</option>
             </select>
           </div>
 
@@ -267,7 +247,6 @@ export default function MyPlan() {
           </p>
         ) : sortedList.length === 0 ? (
 
-          /* Empty State */
           <div className="rounded-3xl border border-dashed border-gray-300 px-6 py-20 text-center">
 
             <h2 className="text-3xl font-black uppercase">
@@ -289,7 +268,6 @@ export default function MyPlan() {
 
         ) : (
 
-          /* Workout Cards */
           <div className="grid gap-6 md:grid-cols-2">
 
             {sortedList.map((workout) => (
@@ -319,7 +297,6 @@ export default function MyPlan() {
                         {workout.name}
                       </h2>
 
-                      {/* Remove */}
                       <button
                         onClick={() => {
                           if (activeTab === "plan") {
@@ -358,7 +335,6 @@ export default function MyPlan() {
 
                     <div className="mt-auto flex flex-wrap gap-2 pt-5">
 
-                      {/* View Details */}
                       <Link
                         href={`/workout/${workout.id}`}
                         className="rounded-full border border-black px-4 py-2 text-xs font-black uppercase"
@@ -366,7 +342,6 @@ export default function MyPlan() {
                         View Details
                       </Link>
 
-                      {/* Mark as Done */}
                       {activeTab === "plan" && (
                         <button
                           onClick={() => markAsDone(workout)}
