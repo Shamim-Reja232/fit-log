@@ -7,7 +7,9 @@ export default function MyPlan() {
   const [plan, setPlan] = useState([]);
   const [saved, setSaved] = useState([]);
   const [activeTab, setActiveTab] = useState("plan");
+  const [sortBy, setSortBy] = useState("duration");
   const [loading, setLoading] = useState(true);
+  const [toast, setToast] = useState(null);
 
   useEffect(() => {
     const loadData = () => {
@@ -33,8 +35,20 @@ export default function MyPlan() {
     };
   }, []);
 
+  // Toast
+  const showToast = (message) => {
+    setToast(message);
+
+    setTimeout(() => {
+      setToast(null);
+    }, 3000);
+  };
+
+  // Remove from Today's Plan
   const removeFromPlan = (id) => {
-    const updatedPlan = plan.filter((workout) => workout.id !== id);
+    const workout = plan.find((item) => item.id === id);
+
+    const updatedPlan = plan.filter((item) => item.id !== id);
 
     localStorage.setItem(
       "fitlog-plan",
@@ -43,12 +57,19 @@ export default function MyPlan() {
 
     setPlan(updatedPlan);
 
+    showToast(
+      `${workout?.name || "Workout"} removed from today's plan`
+    );
+
     window.dispatchEvent(new Event("fitlog-updated"));
   };
 
+  // Remove from Saved
   const removeFromSaved = (id) => {
+    const workout = saved.find((item) => item.id === id);
+
     const updatedSaved = saved.filter(
-      (workout) => workout.id !== id
+      (item) => item.id !== id
     );
 
     localStorage.setItem(
@@ -58,9 +79,14 @@ export default function MyPlan() {
 
     setSaved(updatedSaved);
 
+    showToast(
+      `${workout?.name || "Workout"} removed from saved`
+    );
+
     window.dispatchEvent(new Event("fitlog-updated"));
   };
 
+  // Mark as Done
   const markAsDone = (workout) => {
     const updatedPlan = plan.filter(
       (item) => item.id !== workout.id
@@ -73,15 +99,39 @@ export default function MyPlan() {
 
     setPlan(updatedPlan);
 
-    window.dispatchEvent(new Event("fitlog-updated"));
+    showToast(`${workout.name} marked as done`);
 
-    alert(`${workout.name} marked as done!`);
+    window.dispatchEvent(new Event("fitlog-updated"));
   };
 
-  const currentList = activeTab === "plan" ? plan : saved;
+  // Current list
+  const currentList =
+    activeTab === "plan" ? plan : saved;
 
+  // Sort current list
+  const sortedList = [...currentList].sort((a, b) => {
+    if (sortBy === "duration") {
+      return Number(a.duration || 0) - Number(b.duration || 0);
+    }
+
+    if (sortBy === "calories") {
+      return (
+        Number(b.caloriesBurned || 0) -
+        Number(a.caloriesBurned || 0)
+      );
+    }
+
+    if (sortBy === "rating") {
+      return Number(b.rating || 0) - Number(a.rating || 0);
+    }
+
+    return 0;
+  });
+
+  // Metrics
   const totalMinutes = plan.reduce(
-    (total, workout) => total + Number(workout.duration || 0),
+    (total, workout) =>
+      total + Number(workout.duration || 0),
     0
   );
 
@@ -93,6 +143,7 @@ export default function MyPlan() {
 
   return (
     <main className="min-h-screen bg-white">
+
       {/* Header */}
       <section className="mx-auto max-w-7xl px-4 pb-10 pt-12 sm:px-6 lg:px-8">
         <p className="text-sm font-bold tracking-[0.2em] text-gray-400">
@@ -111,6 +162,8 @@ export default function MyPlan() {
       {/* Metrics */}
       <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-3 gap-3">
+
+          {/* Exercises */}
           <div className="rounded-2xl border border-gray-200 p-5">
             <p className="text-xs font-bold tracking-widest text-gray-400">
               EXERCISES
@@ -121,6 +174,7 @@ export default function MyPlan() {
             </p>
           </div>
 
+          {/* Minutes */}
           <div className="rounded-2xl border border-gray-200 p-5">
             <p className="text-xs font-bold tracking-widest text-gray-400">
               MINUTES
@@ -131,6 +185,7 @@ export default function MyPlan() {
             </p>
           </div>
 
+          {/* Calories */}
           <div className="rounded-2xl border border-gray-200 p-5">
             <p className="text-xs font-bold tracking-widest text-gray-400">
               CALORIES
@@ -140,44 +195,81 @@ export default function MyPlan() {
               {totalCalories}
             </p>
           </div>
+
         </div>
       </section>
 
-      {/* Tabs */}
+      {/* Tabs + Sort */}
       <section className="mx-auto mt-10 max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="flex gap-3 border-b border-gray-200">
-          <button
-            onClick={() => setActiveTab("plan")}
-            className={`border-b-2 px-4 py-3 text-sm font-black uppercase ${
-              activeTab === "plan"
-                ? "border-black text-black"
-                : "border-transparent text-gray-400"
-            }`}
-          >
-            Today&apos;s Plan
-          </button>
+        <div className="flex items-center justify-between border-b border-gray-200">
 
-          <button
-            onClick={() => setActiveTab("saved")}
-            className={`border-b-2 px-4 py-3 text-sm font-black uppercase ${
-              activeTab === "saved"
-                ? "border-black text-black"
-                : "border-transparent text-gray-400"
-            }`}
-          >
-            Saved
-          </button>
+          {/* Tabs */}
+          <div className="flex gap-3">
+
+            <button
+              onClick={() => setActiveTab("plan")}
+              className={`border-b-2 px-4 py-3 text-sm font-black uppercase ${
+                activeTab === "plan"
+                  ? "border-black text-black"
+                  : "border-transparent text-gray-400"
+              }`}
+            >
+              Today&apos;s Plan
+            </button>
+
+            <button
+              onClick={() => setActiveTab("saved")}
+              className={`border-b-2 px-4 py-3 text-sm font-black uppercase ${
+                activeTab === "saved"
+                  ? "border-black text-black"
+                  : "border-transparent text-gray-400"
+              }`}
+            >
+              Saved
+            </button>
+
+          </div>
+
+          {/* Small Sort */}
+          <div className="mb-2 flex items-center gap-2">
+            <span className="hidden text-[10px] font-bold tracking-widest text-gray-400 sm:block">
+              SORT
+            </span>
+
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value)}
+              className="rounded-lg border border-gray-200 bg-white px-2 py-2 text-xs font-bold outline-none focus:border-black"
+            >
+              <option value="duration">
+                Duration
+              </option>
+
+              <option value="calories">
+                Calories
+              </option>
+
+              <option value="rating">
+                Rating
+              </option>
+            </select>
+          </div>
+
         </div>
       </section>
 
       {/* Content */}
       <section className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
+
         {loading ? (
           <p className="py-20 text-center font-bold text-gray-400">
             Loading workouts...
           </p>
-        ) : currentList.length === 0 ? (
+        ) : sortedList.length === 0 ? (
+
+          /* Empty State */
           <div className="rounded-3xl border border-dashed border-gray-300 px-6 py-20 text-center">
+
             <h2 className="text-3xl font-black uppercase">
               NOTHING HERE YET
             </h2>
@@ -192,15 +284,23 @@ export default function MyPlan() {
             >
               Go to workouts
             </Link>
+
           </div>
+
         ) : (
+
+          /* Workout Cards */
           <div className="grid gap-6 md:grid-cols-2">
-            {currentList.map((workout) => (
+
+            {sortedList.map((workout) => (
+
               <article
                 key={workout.id}
                 className="overflow-hidden rounded-3xl border border-gray-200"
               >
+
                 <div className="flex flex-col sm:flex-row">
+
                   {/* Image */}
                   <div className="h-56 sm:h-auto sm:w-48">
                     <img
@@ -212,22 +312,28 @@ export default function MyPlan() {
 
                   {/* Content */}
                   <div className="flex flex-1 flex-col p-5">
+
                     <div className="flex items-start justify-between gap-3">
+
                       <h2 className="text-xl font-black uppercase">
                         {workout.name}
                       </h2>
 
+                      {/* Remove */}
                       <button
-                        onClick={() =>
-                          activeTab === "plan"
-                            ? removeFromPlan(workout.id)
-                            : removeFromSaved(workout.id)
-                        }
-                        className="text-lg font-bold text-gray-400 hover:text-black"
+                        onClick={() => {
+                          if (activeTab === "plan") {
+                            removeFromPlan(workout.id);
+                          } else {
+                            removeFromSaved(workout.id);
+                          }
+                        }}
+                        className="flex h-8 w-8 items-center justify-center rounded-full text-xl font-bold text-gray-400 transition hover:bg-black hover:text-white"
                         aria-label="Remove workout"
                       >
                         ×
                       </button>
+
                     </div>
 
                     <p className="mt-2 text-sm text-gray-500">
@@ -235,14 +341,24 @@ export default function MyPlan() {
                     </p>
 
                     <div className="mt-4 flex gap-4 text-xs font-bold text-gray-500">
-                      <span>{workout.duration} min</span>
+
+                      <span>
+                        {workout.duration} min
+                      </span>
+
                       <span>
                         {workout.caloriesBurned} kcal
                       </span>
-                      <span>⭐ {workout.rating}</span>
+
+                      <span>
+                        ⭐ {workout.rating}
+                      </span>
+
                     </div>
 
                     <div className="mt-auto flex flex-wrap gap-2 pt-5">
+
+                      {/* View Details */}
                       <Link
                         href={`/workout/${workout.id}`}
                         className="rounded-full border border-black px-4 py-2 text-xs font-black uppercase"
@@ -250,6 +366,7 @@ export default function MyPlan() {
                         View Details
                       </Link>
 
+                      {/* Mark as Done */}
                       {activeTab === "plan" && (
                         <button
                           onClick={() => markAsDone(workout)}
@@ -258,14 +375,30 @@ export default function MyPlan() {
                           Mark as Done
                         </button>
                       )}
+
                     </div>
+
                   </div>
+
                 </div>
+
               </article>
+
             ))}
+
           </div>
+
         )}
+
       </section>
+
+      {/* Toast */}
+      {toast && (
+        <div className="fixed bottom-8 left-1/2 z-[9999] w-[90%] max-w-md -translate-x-1/2 rounded-xl bg-black px-6 py-4 text-center text-sm font-bold text-white shadow-2xl">
+          {toast}
+        </div>
+      )}
+
     </main>
   );
 }

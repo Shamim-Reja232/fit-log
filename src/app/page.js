@@ -29,6 +29,7 @@ export default async function Home() {
         id="library"
         className="mx-auto max-w-7xl scroll-mt-20 px-4 py-20 sm:px-6 lg:px-8"
       >
+        {/* Heading */}
         <div className="mb-10">
           <p className="mb-3 text-sm font-bold tracking-[0.2em] text-gray-500">
             WORKOUT LIBRARY
@@ -46,7 +47,10 @@ export default async function Home() {
         {/* Workout Cards */}
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {workouts.map((workout) => (
-            <WorkoutCard key={workout.id} workout={workout} />
+            <WorkoutCard
+              key={workout.id}
+              workout={workout}
+            />
           ))}
         </div>
       </section>
